@@ -1,0 +1,537 @@
+basePath: /api/v1
+definitions:
+  models.Activity:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_resolved:
+        type: boolean
+      reason:
+        type: string
+      schedule_id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.CreateActivityRequest:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    required:
+    - description
+    - title
+    type: object
+  models.EndVisitRequest:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    required:
+    - latitude
+    - longitude
+    type: object
+  models.Schedule:
+    properties:
+      client_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      shift_end:
+        type: string
+      shift_start:
+        type: string
+      status:
+        description: upcoming, in_progress, completed, missed
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.ScheduleWithTasks:
+    properties:
+      client_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      shift_end:
+        type: string
+      shift_start:
+        type: string
+      status:
+        description: upcoming, in_progress, completed, missed
+        type: string
+      tasks:
+        items:
+          $ref: '#/definitions/models.Task'
+        type: array
+      updated_at:
+        type: string
+      visit:
+        $ref: '#/definitions/models.Visit'
+    type: object
+  models.StartVisitRequest:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    required:
+    - latitude
+    - longitude
+    type: object
+  models.StatsResponse:
+    properties:
+      completed_today:
+        type: integer
+      missed_schedules:
+        type: integer
+      total_schedules:
+        type: integer
+      upcoming_today:
+        type: integer
+    type: object
+  models.Task:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      reason:
+        description: reason if not completed
+        type: string
+      schedule_id:
+        type: integer
+      status:
+        description: pending, completed, not_completed
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.UpdateActivityRequest:
+    properties:
+      is_resolved:
+        type: boolean
+      reason:
+        type: string
+    required:
+    - is_resolved
+    type: object
+  models.Visit:
+    properties:
+      created_at:
+        type: string
+      end_lat:
+        type: number
+      end_lng:
+        type: number
+      end_time:
+        type: string
+      id:
+        type: integer
+      schedule_id:
+        type: integer
+      start_lat:
+        type: number
+      start_lng:
+        type: number
+      start_time:
+        type: string
+      updated_at:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: RESTful API for caregiver visit tracking and Electronic Visit Verification
+    (EVV) compliance
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Visit Tracker API
+  version: "1.0"
+paths:
+  /activities/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific activity by its ID
+      parameters:
+      - description: Activity ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Activity'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get activity by ID
+      tags:
+      - activities
+    put:
+      consumes:
+      - application/json
+      description: Update the resolution status of an activity
+      parameters:
+      - description: Activity ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Activity update data
+        in: body
+        name: activity
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Activity'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update activity progress
+      tags:
+      - activities
+  /schedules:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all caregiver schedules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Schedule'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all schedules
+      tags:
+      - schedules
+  /schedules/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific schedule with its tasks and visit information
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ScheduleWithTasks'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get schedule by ID
+      tags:
+      - schedules
+  /schedules/{id}/activities:
+    get:
+      consumes:
+      - application/json
+      description: Get all activities for a specific schedule
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Activity'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get activities by schedule ID
+      tags:
+      - activities
+    post:
+      consumes:
+      - application/json
+      description: Create a new activity for a specific schedule
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Activity data
+        in: body
+        name: activity
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Activity'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new activity
+      tags:
+      - activities
+  /schedules/{id}/end:
+    post:
+      consumes:
+      - application/json
+      description: End a caregiver visit by logging timestamp and geolocation
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: End visit data
+        in: body
+        name: endVisitRequest
+        required: true
+        schema:
+          $ref: '#/definitions/models.EndVisitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: End a visit
+      tags:
+      - visits
+  /schedules/{id}/start:
+    post:
+      consumes:
+      - application/json
+      description: Start a caregiver visit by logging timestamp and geolocation
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Start visit data
+        in: body
+        name: startVisitRequest
+        required: true
+        schema:
+          $ref: '#/definitions/models.StartVisitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Start a visit
+      tags:
+      - visits
+  /schedules/today:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of today's caregiver schedules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Schedule'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get today's schedules
+      tags:
+      - schedules
+  /stats:
+    get:
+      consumes:
+      - application/json
+      description: Get statistics for the dashboard including total, missed, upcoming,
+        and completed schedules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.StatsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get dashboard statistics
+      tags:
+      - stats
+swagger: "2.0"
