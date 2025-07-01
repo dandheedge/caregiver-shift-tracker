@@ -197,7 +197,7 @@ export function ScheduleItem({ schedule }: ScheduleItemProps) {
         </div>
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex flex-col items-center space-x-2 space-y-2">
         {schedule.status === 'scheduled' && (
           <Button
             onClick={handleStartVisit}
