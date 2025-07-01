@@ -30,7 +30,7 @@ services:
     container_name: visit-tracker-client
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "82:80"
     depends_on:
       server:
         condition: service_healthy
