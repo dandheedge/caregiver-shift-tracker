@@ -20,7 +20,7 @@ import {
   type UpdateActivityRequest,
 } from '@/lib/schemas';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://server.31.97.179.158.sslip.io/api/v1/';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://server.31.97.179.158.sslip.io/api/v1';
 
 
 

@@ -64,11 +64,19 @@ func main() {
 	router.Use(middleware.ErrorHandlerMiddleware(logger))
 	router.Use(gin.Recovery()) // Keep gin's recovery as backup
 
-	// Configure CORS
+	// Configure CORS - Allow requests from anywhere
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"*"} // In production, specify actual origins
-	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Request-ID"}
+	config.AllowAllOrigins = true
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"}
+	config.AllowHeaders = []string{
+		"Origin", "Content-Type", "Accept", "Authorization", "X-Request-ID",
+		"X-Requested-With", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers",
+		"Access-Control-Allow-Methods", "Access-Control-Expose-Headers", "Access-Control-Max-Age",
+		"Access-Control-Allow-Credentials", "Cache-Control", "Pragma",
+	}
+	config.ExposeHeaders = []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"}
+	config.AllowCredentials = false
+	config.MaxAge = 12 * 60 * 60 // 12 hours
 	router.Use(cors.New(config))
 
 	// Health check endpoint (supports both GET and HEAD methods)
@@ -81,6 +89,14 @@ func main() {
 	}
 	router.GET("/health", healthHandler)
 	router.HEAD("/health", healthHandler)
+
+	// CORS debug endpoint (temporary)
+	router.OPTIONS("/*path", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization, X-Request-ID, X-Requested-With")
+		c.Status(204)
+	})
 
 	// Swagger documentation
 	// Redirect root swagger path to index for better UX  
