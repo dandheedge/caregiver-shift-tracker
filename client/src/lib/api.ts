@@ -22,6 +22,13 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
+// Debug: Log the API URL being used
+console.log('🔗 API Base URL:', API_BASE_URL);
+console.log('🔧 Environment variables:', {
+  VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  NODE_ENV: import.meta.env.NODE_ENV
+});
+
 class ApiClient {
   private async request<T>(
     endpoint: string,
